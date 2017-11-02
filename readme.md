@@ -11,7 +11,7 @@ chmod -R 777 storage bootstrap/cache
 # Get Slack Webhook URL
 - https://{YOURS}.slack.com/apps/A0F7XDUAZ-incoming-webhooks
 
-# Add Webhook URL
+# Set Webhook URL
 - https://{YOURS}.backlog.com/settings/webhook/{YOURS}/create
 
 # Get Backlog API Key
