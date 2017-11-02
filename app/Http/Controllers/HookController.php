@@ -73,7 +73,6 @@ class HookController extends Controller
 		$data = "payload=" . json_encode([
 			"channel"     => "#" . getenv('SLACK_CHANNEL'),
 			"attachments" => $attachments,
-			"icon_emoji"  => getenv('SLACK_ICON_EMOJI'),
 		]);
 
 		$ch = curl_init(getenv('SLACK_ENDPOINT'));
