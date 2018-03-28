@@ -11,18 +11,31 @@ class HookController extends Controller
     // https://developer.nulab-inc.com/ja/docs/backlog/api/2/get-recent-updates/
 	public function onHook(Request $request)
 	{
-        if(! $this->validateType($request)){
-            return false;
+        if($this->isIssue($request)){
+            $backlogIssue = new BacklogIssue($request);
+            $this->onIssueCreated($request, $backlogIssue);
+            $this->onIssueUpdated($request, $backlogIssue);
+            exit;
         }
 
-        $backlogIssue = new BacklogIssue($request);
-
-        $this->onCreated($request, $backlogIssue);
-        $this->onUpdated($request, $backlogIssue);
-        exit;
+        if($this->isWiki($request)){
+            $backlogIssue = new BacklogIssue($request);
+            $this->onWikiCreated($request, $backlogIssue);
+            $this->onWikiUpdated($request, $backlogIssue);
+            exit;
+        }
     }
 
-    private function validateType(Request $request)
+    private function isWiki(Request $request)
+    {
+        if($request->input('type') === 5)  return true; // Wikiを追加
+        if($request->input('type') === 6)  return true; // Wikiを更新
+        if($request->input('type') === 7)  return true; // Wikiを削除
+
+        return false;
+    }
+
+    private function isIssue(Request $request)
     {
         if($request->input('type') === 1)  return true; // 課題の追加
         if($request->input('type') === 2)  return true; // 課題の更新
@@ -35,7 +48,7 @@ class HookController extends Controller
     }
 
     // https://gist.github.com/alexstone/9319715
-    private function sendToSlack(array $params)
+    private function sendIssueToSlack(array $params)
     {
 		$attachments = array([
 			'fallback' => $params['summary'] . ' ' . $params['url'],
@@ -85,7 +98,42 @@ class HookController extends Controller
 		return $result;
 	}
 
-	private function onCreated(Request $request, BacklogIssue $issue)
+    private function sendWikiToSlack(array $params)
+    {
+		$attachments = array([
+			'fallback' => $params['summary'] . ' ' . $params['url'],
+			'text'  => $params['url'],
+			'color'    => '#ff6600',
+			'fields'   => [
+				[
+					'title' => 'Status',
+					'value' => $params['summary'],
+					'short' => false,
+				],
+				[
+					'title' => 'Content',
+					'value' => $params['diff'],
+					'short' => false,
+				],
+			]
+		]);
+
+		$data = "payload=" . json_encode([
+			"channel"     => "#" . getenv('SLACK_CHANNEL'),
+			"attachments" => $attachments,
+		]);
+
+		$ch = curl_init(getenv('SLACK_ENDPOINT'));
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$result = curl_exec($ch);
+		curl_close($ch);
+
+		return $result;
+	}
+
+	private function onIssueCreated(Request $request, BacklogIssue $issue)
 	{
 		if($request->input('type') !== 1) return false;
 
@@ -95,7 +143,7 @@ class HookController extends Controller
 		$createdUser    = $request->input('createdUser.name');
 		$contentSummary = $request->input('content.summary');
 
-		$this->sendToSlack([
+		$this->sendIssueToSlack([
             'summary'   => $contentSummary,
             'url'       => "https://{$projectName}.backlog.com/view/{$projectKey}-{$keyId}",
             'keyId'     => $keyId,
@@ -108,7 +156,7 @@ class HookController extends Controller
 		exit;
 	}
 
-	private function onUpdated(Request $request, BacklogIssue $issue)
+	private function onIssueUpdated(Request $request, BacklogIssue $issue)
 	{
 		$type = $request->input('type');
 		if($type !== 2 && $type !== 3) return false;
@@ -121,7 +169,7 @@ class HookController extends Controller
 		$commentId      = $request->input('content.comment.id');
 		$comment        = $request->input('content.comment.content');
 
-		$this->sendToSlack([
+		$this->sendIssueToSlack([
             'summary'   => $contentSummary,
             'url'       => "https://{$projectName}.backlog.com/view/{$projectKey}-{$keyId}#comment-{$commentId}",
             'keyId'     => $keyId,
@@ -130,6 +178,42 @@ class HookController extends Controller
             'priority'  => $issue['priority']['name'],
             'dueDate'   => Carbon::parse($issue['dueDate'])->toDateString(),
             'comment'   => $comment,
+        ]);
+		exit;
+	}
+
+	private function onWikiCreated(Request $request, BacklogIssue $issue)
+	{
+		if($request->input('type') !== 5) return false;
+
+		$projectName    = $request->input('project.name');
+		$projectKey     = $request->input('project.projectKey');
+		$createdUser    = $request->input('createdUser.name');
+		$contentName    = $request->input('content.name');
+
+		$this->sendWikiToSlack([
+            'summary'   => 'Wiki Created',
+            'url'       => "https://{$projectName}.backlog.com/wiki/{$projectKey}/{$contentName}",
+            'diff'      => '',
+        ]);
+		exit;
+	}
+
+	private function onWikiUpdated(Request $request, BacklogIssue $issue)
+	{
+		$type = $request->input('type');
+		if($type !== 6 && $type !== 7) return false;
+
+		$projectName    = $request->input('project.name');
+		$projectKey     = $request->input('project.projectKey');
+		$createdUser    = $request->input('createdUser.name');
+		$contentName    = $request->input('content.name');
+		$contentDiff    = $request->input('content.diff');
+
+		$this->sendWikiToSlack([
+            'summary'   => 'Wiki Updated',
+            'url'       => "https://{$projectName}.backlog.com/wiki/{$projectKey}/{$contentName}",
+            'diff'      => $contentDiff,
         ]);
 		exit;
 	}
