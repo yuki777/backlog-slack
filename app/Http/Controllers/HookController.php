@@ -102,17 +102,12 @@ class HookController extends Controller
     {
         $attachments = array([
             'fallback' => $params['summary'] . ' ' . $params['url'],
-            'text'  => $params['url'],
+            'text'     => '<' . $params['url'] . '|' . $params['summary'] . '>',
             'color'    => '#ff6600',
             'fields'   => [
                 [
                     'title' => 'Status',
-                    'value' => $params['summary'],
-                    'short' => false,
-                ],
-                [
-                    'title' => 'Content',
-                    'value' => $params['diff'],
+                    'value' => $params['status'],
                     'short' => false,
                 ],
             ]
@@ -193,9 +188,9 @@ class HookController extends Controller
         $contentName    = $request->input('content.name');
 
         $this->sendWikiToSlack([
-            'summary'   => 'Wiki Created',
+            'summary'   => $contentName,
             'url'       => "https://{$projectName}.backlog.com/alias/wiki/{$contentId}",
-            'diff'      => '',
+            'status'    => 'Wiki Created.',
         ]);
         exit;
     }
@@ -210,12 +205,11 @@ class HookController extends Controller
         $createdUser    = $request->input('createdUser.name');
         $contentId      = $request->input('content.id');
         $contentName    = $request->input('content.name');
-        $contentDiff    = $request->input('content.diff');
 
         $this->sendWikiToSlack([
-            'summary'   => 'Wiki Updated',
+            'summary'   => $contentName,
             'url'       => "https://{$projectName}.backlog.com/alias/wiki/{$contentId}",
-            'diff'      => $contentDiff,
+            'status'    => 'Wiki Updated.',
         ]);
         exit;
     }
