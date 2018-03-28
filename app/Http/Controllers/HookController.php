@@ -189,11 +189,12 @@ class HookController extends Controller
         $projectName    = $request->input('project.name');
         $projectKey     = $request->input('project.projectKey');
         $createdUser    = $request->input('createdUser.name');
+        $contentId      = $request->input('content.id');
         $contentName    = $request->input('content.name');
 
         $this->sendWikiToSlack([
             'summary'   => 'Wiki Created',
-            'url'       => "https://{$projectName}.backlog.com/wiki/{$projectKey}/{$contentName}",
+            'url'       => "https://{$projectName}.backlog.com/alias/wiki/{$contentId}",
             'diff'      => '',
         ]);
         exit;
@@ -207,12 +208,13 @@ class HookController extends Controller
         $projectName    = $request->input('project.name');
         $projectKey     = $request->input('project.projectKey');
         $createdUser    = $request->input('createdUser.name');
+        $contentId      = $request->input('content.id');
         $contentName    = $request->input('content.name');
         $contentDiff    = $request->input('content.diff');
 
         $this->sendWikiToSlack([
             'summary'   => 'Wiki Updated',
-            'url'       => "https://{$projectName}.backlog.com/wiki/{$projectKey}/{$contentName}",
+            'url'       => "https://{$projectName}.backlog.com/alias/wiki/{$contentId}",
             'diff'      => $contentDiff,
         ]);
         exit;
