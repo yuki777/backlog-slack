@@ -24,6 +24,6 @@ SLACK_CHANNEL
 BACKLOG_API_KEY
 ```
 
-# Backの設定でこのツールのURLを設定します
+# Backlogの設定でこのツールを設置したURLを設定します
 - https://{YOURS}.backlog.com/settings/webhook/{YOURS}/create
 -  (例 : https://{YOURS}/api/hook )
