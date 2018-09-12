@@ -10,8 +10,10 @@ class BacklogIssue extends Model
     public function __construct(Request $request)
     {
         $result = $this->curlGet($this->getUrl($request));
-        foreach($result as $k => $v){
-            $this[$k] = $v;
+        if(is_array($result)){
+            foreach($result as $k => $v){
+                $this[$k] = $v;
+            }
         }
     }
 
