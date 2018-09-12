@@ -8,6 +8,7 @@ git clone https://github.com/yuki777/backlog-slack
 cd backlog-slack
 php composer.phar install -vvv
 chmod -R 777 storage bootstrap/cache
+cp .env.sample .env
 ```
 
 # BacklogのAPIキーを取得します
