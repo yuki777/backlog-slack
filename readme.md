@@ -2,6 +2,7 @@
 - Backlogの更新をトリガーにSlackに通知するツールです
 
 # インストール
+- 適当に外部からアクセスできるところに設置します
 ```
 git clone https://github.com/yuki777/backlog-slack
 cd backlog-slack
