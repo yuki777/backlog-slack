@@ -4,6 +4,7 @@
 # Install
 ```
 git clone https://github.com/yuki777/backlog-slack
+cd backlog-slack
 php composer.phar install -vvv
 chmod -R 777 storage bootstrap/cache
 ```
