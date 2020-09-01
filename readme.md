@@ -1,3 +1,11 @@
+# UPDATE
+- [BacklogとSlackを簡単に連携できるようになりました。](https://backlog.com/ja/integrations/slack/)
+- 以下、不要です。
+
+
+
+
+
 # これは
 - Backlogの更新をトリガーにSlackに通知するツールです
 
